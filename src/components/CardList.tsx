@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { Card, OwnershipStatus, User } from '../types';
 import { CardDetailModal } from './CardDetailModal';
 import './CardList.css';
@@ -22,12 +22,11 @@ export const CardList: React.FC<CardListProps> = ({
 }) => {
   const [filter, setFilter] = useState('');
   const [rarityFilter, setRarityFilter] = useState('all');
-  const [statusFilter, setStatusFilter] = useState('all');
   const [selectedCard, setSelectedCard] = useState<Card | null>(null);
 
   const filteredCards = cards.filter(card => {
     const matchesSearch = card.name.toLowerCase().includes(filter.toLowerCase()) ||
-                         card.number.includes(filter);
+      card.number.includes(filter);
     const matchesRarity = rarityFilter === 'all' || card.rarity === rarityFilter;
     return matchesSearch && matchesRarity;
   });
@@ -71,12 +70,12 @@ export const CardList: React.FC<CardListProps> = ({
           const missingUserNames = users
             .filter(u => missingUserIds.includes(u.id))
             .map(u => u.name);
-          
+
           const hasMissingUsers = missingUserNames.length > 0;
 
           return (
-            <div 
-              key={card.id} 
+            <div
+              key={card.id}
               className={`card-item ${isMissing ? 'missing' : ''} ${hasMissingUsers ? 'has-missing-users' : ''}`}
               onClick={() => setSelectedCard(card)}
             >

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { GoogleOAuthProvider } from '@react-oauth/google';
 import { CardList } from './components/CardList';
 import { CollectionStats } from './components/CollectionStats';
@@ -20,11 +20,7 @@ function App() {
 
   const sheetsService = GoogleSheetsService.getInstance();
 
-  useEffect(() => {
-    initializeApp();
-  }, []);
-
-  const initializeApp = async () => {
+  const initializeApp = useCallback(async () => {
     try {
       setLoading(true);
       await sheetsService.initialize();
@@ -36,11 +32,11 @@ function App() {
           sheetsService.getUsers(),
           sheetsService.getAllOwnershipStatus(),
         ]);
-        
+
         setCards(cardsData);
         setUsers(usersData);
         setAllOwnership(allOwnershipData);
-        
+
         const userInfo = await sheetsService.getUserInfo();
         if (userInfo && userInfo.email) {
           const currentUser = usersData.find(u => u.email === userInfo.email);
@@ -56,27 +52,31 @@ function App() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [sheetsService]);
+
+  useEffect(() => {
+    initializeApp();
+  }, [initializeApp]);
 
   const handleSignIn = async () => {
     try {
       await sheetsService.signIn();
       setIsSignedIn(true);
-      
+
       // サインイン直後に少し待機（新規ユーザー登録の反映待ち）
       await new Promise(resolve => setTimeout(resolve, 500));
-      
+
       // ユーザー情報が更新されているので、データを再読み込み
       const [cardsData, usersData, allOwnershipData] = await Promise.all([
         sheetsService.getCards(),
         sheetsService.getUsers(),
         sheetsService.getAllOwnershipStatus(),
       ]);
-      
+
       setCards(cardsData);
       setUsers(usersData);
       setAllOwnership(allOwnershipData);
-      
+
       // ログインしたユーザーのメールアドレスから現在のユーザーを特定
       const userInfo = await sheetsService.getUserInfo();
       if (userInfo && userInfo.email) {
@@ -141,7 +141,7 @@ function App() {
         const filtered = prev.filter(o => !(o.cardId === cardId && o.userId === currentUserId));
         return [...filtered, newStatus];
       });
-      
+
       // 全ユーザーの所持状況も更新
       setAllOwnership(prev => {
         const filtered = prev.filter(o => !(o.cardId === cardId && o.userId === currentUserId));
