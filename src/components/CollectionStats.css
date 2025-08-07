@@ -9,8 +9,22 @@
 
 .stats-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  grid-template-columns: 1fr 1fr;
   gap: 20px;
+  align-items: stretch;
+  height: 600px;
+}
+
+.stats-left {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+@media (max-width: 768px) {
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 .stat-card {
@@ -103,20 +117,83 @@
   font-style: italic;
 }
 
+.missing-cards-full {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
 .missing-count {
-  font-size: 36px;
+  font-size: 24px;
   font-weight: bold;
   color: #ff9800;
   margin: 10px 0;
+  flex-shrink: 0;
+}
+
+.missing-cards-full h3 {
+  flex-shrink: 0;
 }
 
 .missing-list {
   margin-top: 15px;
+  flex: 1;
+  min-height: 0;
+}
+
+.missing-list.scrollable {
+  overflow-y: auto;
+  padding-right: 10px;
+}
+
+.missing-list.scrollable::-webkit-scrollbar {
+  width: 8px;
+}
+
+.missing-list.scrollable::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+.missing-list.scrollable::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 4px;
+}
+
+.missing-list.scrollable::-webkit-scrollbar-thumb:hover {
+  background: #555;
 }
 
 .missing-item {
-  padding: 5px 0;
+  display: grid;
+  grid-template-columns: 60px 1fr 80px 120px;
+  gap: 8px;
+  padding: 8px 0;
   color: #666;
   font-size: 14px;
   border-bottom: 1px solid #eee;
+  align-items: center;
+}
+
+.missing-item .card-number {
+  font-weight: bold;
+  color: #999;
+}
+
+.missing-item .card-name {
+  font-weight: 500;
+  color: #333;
+}
+
+.missing-item .card-rarity {
+  color: #f57c00;
+  font-weight: bold;
+  text-align: center;
+}
+
+.missing-item .card-series {
+  color: #666;
+  font-size: 12px;
+  text-align: right;
 }
