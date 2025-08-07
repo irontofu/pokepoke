@@ -31,7 +31,10 @@ export const CardList: React.FC<CardListProps> = ({
   const [filter, setFilter] = useState('');
   const [rarityFilter, setRarityFilter] = useState('tradeable');
   const [seriesFilter, setSeriesFilter] = useState('tradeable');
+  const [showNotOwnedOnly, setShowNotOwnedOnly] = useState(false);
+  const [showTradeableOnly, setShowTradeableOnly] = useState(false);
   const [selectedCard, setSelectedCard] = useState<Card | null>(null);
+
 
 
   const filteredCards = cards.filter(card => {
@@ -63,6 +66,22 @@ export const CardList: React.FC<CardListProps> = ({
     }
     
     
+    // 未所持のみフィルター
+    if (showNotOwnedOnly) {
+      const isNotOwned = ownership.find(o => o.cardId === card.id)?.notOwned || false;
+      if (!isNotOwned) return false;
+    }
+    
+    // 交換可能な人がいるカードのみフィルター
+    if (showTradeableOnly) {
+      const hasTradeableUsers = allOwnership.some(o => 
+        o.cardId === card.id && 
+        o.tradeable && 
+        o.userId !== currentUserId
+      );
+      if (!hasTradeableUsers) return false;
+    }
+    
     return matchesSearch && matchesRarity && matchesSeries;
   });
 
@@ -89,6 +108,22 @@ export const CardList: React.FC<CardListProps> = ({
           onChange={(e) => setFilter(e.target.value)}
           className="search-input"
         />
+        <label className="filter-checkbox">
+          <input
+            type="checkbox"
+            checked={showNotOwnedOnly}
+            onChange={(e) => setShowNotOwnedOnly(e.target.checked)}
+          />
+          <span>未所持のみ</span>
+        </label>
+        <label className="filter-checkbox">
+          <input
+            type="checkbox"
+            checked={showTradeableOnly}
+            onChange={(e) => setShowTradeableOnly(e.target.checked)}
+          />
+          <span>交換可能者あり</span>
+        </label>
         <select
           value={rarityFilter}
           onChange={(e) => setRarityFilter(e.target.value)}
