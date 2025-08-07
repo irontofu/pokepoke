@@ -23,7 +23,6 @@ export const CardDetailModal: React.FC<CardDetailModalProps> = ({
     .map(o => o.userId);
   
   const missingUsers = users.filter(u => missingUserIds.includes(u.id));
-  const owningUsers = users.filter(u => !missingUserIds.includes(u.id));
   
   // 交換可能なユーザーを取得
   const tradeableOwnership = allOwnership

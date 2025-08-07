@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { Card, OwnershipStatus, User } from '../types';
 import { CardDetailModal } from './CardDetailModal';
 import './CardList.css';
@@ -25,7 +25,6 @@ export const CardList: React.FC<CardListProps> = ({
   const [filter, setFilter] = useState('');
   const [rarityFilter, setRarityFilter] = useState('all');
   const [seriesFilter, setSeriesFilter] = useState('all');
-  const [statusFilter, setStatusFilter] = useState('all');
   const [selectedCard, setSelectedCard] = useState<Card | null>(null);
 
   const filteredCards = cards.filter(card => {
