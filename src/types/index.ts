@@ -16,8 +16,8 @@ export interface User {
 export interface OwnershipStatus {
   cardId: string;
   userId: string;
-  owned: boolean;
-  quantity?: number;
+  notOwned: boolean;
+  tradeable?: boolean;
   notes?: string;
 }
 

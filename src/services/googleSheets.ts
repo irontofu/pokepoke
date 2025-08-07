@@ -286,8 +286,8 @@ export class GoogleSheetsService {
         .map((row: any[]) => ({
           cardId: row[0],
           userId: row[1],
-          owned: row[2] === 'TRUE',
-          quantity: parseInt(row[3]) || 0,
+          notOwned: row[2] === 'TRUE',
+          tradeable: row[3] === 'TRUE',
           notes: row[4],
         }));
     } catch (error) {
@@ -311,8 +311,8 @@ export class GoogleSheetsService {
       return rows.map((row: any[]) => ({
         cardId: row[0],
         userId: row[1],
-        owned: row[2] === 'TRUE',
-        quantity: parseInt(row[3]) || 0,
+        notOwned: row[2] === 'TRUE',
+        tradeable: row[3] === 'TRUE',
         notes: row[4],
       }));
     } catch (error) {
@@ -338,8 +338,8 @@ export class GoogleSheetsService {
         (row: any[]) => row[0] === status.cardId && row[1] === status.userId
       );
       
-      if (!status.owned) {
-        // owned=false（所持している）の場合、既存の行があれば削除
+      if (!status.notOwned) {
+        // notOwned=false（所持している）の場合、既存の行があれば削除
         if (existingRowIndex !== -1) {
           // スプレッドシートの行を詰めるため、全データを再書き込み
           const newRows = rows.filter((_: any, index: number) => index !== existingRowIndex);
@@ -360,16 +360,16 @@ export class GoogleSheetsService {
             });
           }
         }
-        // owned=falseの場合は何も追加しない
+        // notOwned=falseの場合は何も追加しない
       } else {
-        // owned=true（未持）の場合
+        // notOwned=true（未持）の場合
         if (existingRowIndex === -1) {
           // 新規追加
           const values = [[
             status.cardId,
             status.userId,
             'TRUE',
-            status.quantity || 0,
+            status.tradeable ? 'TRUE' : 'FALSE',
             status.notes || '',
           ]];
           
@@ -386,6 +386,95 @@ export class GoogleSheetsService {
       return true;
     } catch (error) {
       console.error('Error updating ownership status:', error);
+      return false;
+    }
+  }
+
+  async updateTradeableStatus(cardId: string, userId: string, tradeable: boolean): Promise<boolean> {
+    try {
+      if (!this.isSignedIn()) {
+        await this.signIn();
+      }
+      
+      // まず既存のデータを取得
+      const response = await this.sheets.spreadsheets.values.get({
+        spreadsheetId: SPREADSHEET_ID,
+        range: 'Ownership!A2:E',
+      });
+      
+      const rows = response.result.values || [];
+      const rowIndex = rows.findIndex(
+        (row: any[]) => row[0] === cardId && row[1] === userId
+      );
+      
+      if (rowIndex === -1) {
+        // レコードが存在しない場合（所持している場合）
+        // 交換可能の場合のみレコードを作成
+        if (tradeable) {
+          const values = [[
+            cardId,
+            userId,
+            'FALSE', // notOwned=false（所持している）
+            'TRUE',  // tradeable=true
+            '',      // notes
+          ]];
+          
+          await this.sheets.spreadsheets.values.append({
+            spreadsheetId: SPREADSHEET_ID,
+            range: 'Ownership!A:E',
+            valueInputOption: 'USER_ENTERED',
+            resource: { values },
+          });
+          return true;
+        }
+        // tradeable=falseの場合は何もしない
+        return true;
+      }
+      
+      // 既存のレコードを確認
+      const existingRow = rows[rowIndex];
+      const notOwned = existingRow[2] === 'TRUE';
+      
+      if (!notOwned && !tradeable) {
+        // 所持していて、交換可能でもない場合はレコードを削除
+        const allRows = await this.sheets.spreadsheets.values.get({
+          spreadsheetId: SPREADSHEET_ID,
+          range: 'Ownership!A2:E1000',
+        });
+        
+        const newRows = (allRows.result.values || []).filter(
+          (_: any, index: number) => index !== rowIndex
+        );
+        
+        // 一旦全削除
+        await this.sheets.spreadsheets.values.clear({
+          spreadsheetId: SPREADSHEET_ID,
+          range: 'Ownership!A2:E1000',
+        });
+        
+        // 新しいデータを書き込み
+        if (newRows.length > 0) {
+          await this.sheets.spreadsheets.values.update({
+            spreadsheetId: SPREADSHEET_ID,
+            range: 'Ownership!A2:E',
+            valueInputOption: 'USER_ENTERED',
+            resource: { values: newRows },
+          });
+        }
+      } else {
+        // レコードが残る場合は tradeable 列を更新
+        const sheetRowIndex = rowIndex + 2;
+        await this.sheets.spreadsheets.values.update({
+          spreadsheetId: SPREADSHEET_ID,
+          range: `Ownership!D${sheetRowIndex}`,
+          valueInputOption: 'USER_ENTERED',
+          resource: { values: [[tradeable ? 'TRUE' : 'FALSE']] },
+        });
+      }
+
+      return true;
+    } catch (error) {
+      console.error('Error updating tradeable status:', error);
       return false;
     }
   }

@@ -126,12 +126,12 @@ function App() {
     setAllOwnership(allOwnershipData);
   };
 
-  const handleToggleOwnership = async (cardId: string, owned: boolean) => {
+  const handleToggleNotOwned = async (cardId: string, notOwned: boolean) => {
     const newStatus: OwnershipStatus = {
       cardId,
       userId: currentUserId,
-      owned,
-      quantity: owned ? 1 : 0,
+      notOwned,
+      tradeable: false,
     };
 
     const success = await sheetsService.updateOwnershipStatus(newStatus);
@@ -141,12 +141,50 @@ function App() {
         const filtered = prev.filter(o => !(o.cardId === cardId && o.userId === currentUserId));
         return [...filtered, newStatus];
       });
-
+      
       // 全ユーザーの所持状況も更新
       setAllOwnership(prev => {
         const filtered = prev.filter(o => !(o.cardId === cardId && o.userId === currentUserId));
         return [...filtered, newStatus];
       });
+    }
+  };
+
+  const handleToggleTradeable = async (cardId: string, tradeable: boolean) => {
+    const success = await sheetsService.updateTradeableStatus(cardId, currentUserId, tradeable);
+    if (success) {
+      // 現在のユーザーの所持状況を確認
+      const existingStatus = ownership.find(o => o.cardId === cardId && o.userId === currentUserId);
+      
+      if (existingStatus) {
+        // 既存のレコードがある場合は更新
+        setOwnership(prev => 
+          prev.map(o => 
+            o.cardId === cardId && o.userId === currentUserId 
+              ? { ...o, tradeable } 
+              : o
+          )
+        );
+        
+        setAllOwnership(prev => 
+          prev.map(o => 
+            o.cardId === cardId && o.userId === currentUserId 
+              ? { ...o, tradeable } 
+              : o
+          )
+        );
+      } else if (tradeable) {
+        // 新規レコードの場合（所持していて交換可能にチェック）
+        const newStatus: OwnershipStatus = {
+          cardId,
+          userId: currentUserId,
+          notOwned: false,
+          tradeable: true,
+        };
+        
+        setOwnership(prev => [...prev, newStatus]);
+        setAllOwnership(prev => [...prev, newStatus]);
+      }
     }
   };
 
@@ -222,7 +260,8 @@ function App() {
               allOwnership={allOwnership}
               users={users}
               currentUserId={currentUserId}
-              onToggleOwnership={handleToggleOwnership}
+              onToggleNotOwned={handleToggleNotOwned}
+              onToggleTradeable={handleToggleTradeable}
             />
           ) : (
             <CollectionStats

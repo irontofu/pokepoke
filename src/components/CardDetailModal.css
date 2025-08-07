@@ -133,6 +133,10 @@
   color: #f44336;
 }
 
+.stat-value.tradeable {
+  color: #2196f3;
+}
+
 .user-lists {
   padding: 20px;
 }
@@ -165,6 +169,7 @@
   border-radius: 4px;
   margin-bottom: 5px;
   transition: background-color 0.2s;
+  position: relative;
 }
 
 .user-item.missing {
@@ -173,6 +178,26 @@
 
 .user-item.missing:hover {
   background-color: #ffcdd2;
+}
+
+.user-item.missing.tradeable {
+  background-color: #e8f5e9;
+  border: 1px solid #4caf50;
+}
+
+.user-item.missing.tradeable:hover {
+  background-color: #c8e6c9;
+}
+
+.user-item .tradeable-badge {
+  position: absolute;
+  right: 15px;
+  background-color: #4caf50;
+  color: white;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: bold;
 }
 
 .user-item.owned {
@@ -191,6 +216,32 @@
 .user-email {
   font-size: 14px;
   color: #666;
+}
+
+.ownership-status {
+  font-size: 14px;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-weight: 500;
+}
+
+.user-item.tradeable.owned .ownership-status {
+  background-color: #e3f2fd;
+  color: #1565c0;
+}
+
+.user-item.tradeable.missing .ownership-status {
+  background-color: #ffebee;
+  color: #d32f2f;
+}
+
+.tradeable-users-list .user-item.tradeable {
+  background-color: #f5f5f5;
+  border: 1px solid #2196f3;
+}
+
+.tradeable-users-list .user-item.tradeable:hover {
+  background-color: #e3f2fd;
 }
 
 .no-users {

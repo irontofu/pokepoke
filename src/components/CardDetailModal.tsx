@@ -19,11 +19,19 @@ export const CardDetailModal: React.FC<CardDetailModalProps> = ({
 
   // このカードを持っていないユーザーを取得
   const missingUserIds = allOwnership
-    .filter(o => o.cardId === card.id && o.owned)
+    .filter(o => o.cardId === card.id && o.notOwned)
     .map(o => o.userId);
   
   const missingUsers = users.filter(u => missingUserIds.includes(u.id));
   const owningUsers = users.filter(u => !missingUserIds.includes(u.id));
+  
+  // 交換可能なユーザーを取得
+  const tradeableOwnership = allOwnership
+    .filter(o => o.cardId === card.id && o.tradeable);
+  
+  const tradeableUsers = users.filter(u => 
+    tradeableOwnership.some(o => o.userId === u.id)
+  );
 
   return (
     <div className="modal-overlay" onClick={onClose}>
@@ -49,12 +57,12 @@ export const CardDetailModal: React.FC<CardDetailModalProps> = ({
 
         <div className="ownership-summary">
           <div className="ownership-stat">
-            <span className="stat-label">所持</span>
-            <span className="stat-value owned">{owningUsers.length}人</span>
-          </div>
-          <div className="ownership-stat">
             <span className="stat-label">未所持</span>
             <span className="stat-value missing">{missingUsers.length}人</span>
+          </div>
+          <div className="ownership-stat">
+            <span className="stat-label">交換可能</span>
+            <span className="stat-value tradeable">{tradeableUsers.length}人</span>
           </div>
         </div>
 
@@ -63,15 +71,37 @@ export const CardDetailModal: React.FC<CardDetailModalProps> = ({
             <h3>持っていない人 ({missingUsers.length}人)</h3>
             {missingUsers.length > 0 ? (
               <ul className="user-list missing-users-list">
-                {missingUsers.map(user => (
-                  <li key={user.id} className="user-item missing">
-                    <span className="user-name">{user.name}</span>
-                    <span className="user-email">{user.email}</span>
-                  </li>
-                ))}
+                {missingUsers.map(user => {
+                  const isTradeable = tradeableOwnership.some(o => o.userId === user.id);
+                  return (
+                    <li key={user.id} className={`user-item missing ${isTradeable ? 'tradeable' : ''}`}>
+                      <span className="user-name">{user.name}</span>
+                      {isTradeable && <span className="tradeable-badge">交換可能</span>}
+                    </li>
+                  );
+                })}
               </ul>
             ) : (
               <p className="no-users">全員が所持しています！</p>
+            )}
+          </div>
+
+          <div className="user-list-section">
+            <h3>交換可能な人 ({tradeableUsers.length}人)</h3>
+            {tradeableUsers.length > 0 ? (
+              <ul className="user-list tradeable-users-list">
+                {tradeableUsers.map(user => {
+                  const ownership = tradeableOwnership.find(o => o.userId === user.id);
+                  const isOwned = !ownership?.notOwned;
+                  return (
+                    <li key={user.id} className={`user-item tradeable ${isOwned ? 'owned' : 'missing'}`}>
+                      <span className="user-name">{user.name}</span>
+                    </li>
+                  );
+                })}
+              </ul>
+            ) : (
+              <p className="no-users">交換可能な人はいません</p>
             )}
           </div>
 

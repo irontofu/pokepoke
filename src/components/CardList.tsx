@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Card, OwnershipStatus, User } from '../types';
 import { CardDetailModal } from './CardDetailModal';
 import './CardList.css';
@@ -9,7 +9,8 @@ interface CardListProps {
   allOwnership: OwnershipStatus[];
   users: User[];
   currentUserId: string;
-  onToggleOwnership: (cardId: string, owned: boolean) => void;
+  onToggleNotOwned: (cardId: string, notOwned: boolean) => void;
+  onToggleTradeable: (cardId: string, tradeable: boolean) => void;
 }
 
 export const CardList: React.FC<CardListProps> = ({
@@ -18,25 +19,35 @@ export const CardList: React.FC<CardListProps> = ({
   allOwnership,
   users,
   currentUserId,
-  onToggleOwnership,
+  onToggleNotOwned,
+  onToggleTradeable,
 }) => {
   const [filter, setFilter] = useState('');
   const [rarityFilter, setRarityFilter] = useState('all');
+  const [seriesFilter, setSeriesFilter] = useState('all');
+  const [statusFilter, setStatusFilter] = useState('all');
   const [selectedCard, setSelectedCard] = useState<Card | null>(null);
 
   const filteredCards = cards.filter(card => {
     const matchesSearch = card.name.toLowerCase().includes(filter.toLowerCase()) ||
-      card.number.includes(filter);
+                         card.number.includes(filter);
     const matchesRarity = rarityFilter === 'all' || card.rarity === rarityFilter;
-    return matchesSearch && matchesRarity;
+    const matchesSeries = seriesFilter === 'all' || card.series === seriesFilter;
+    return matchesSearch && matchesRarity && matchesSeries;
   });
 
-  const getMissingStatus = (cardId: string): boolean => {
+  const getNotOwnedStatus = (cardId: string): boolean => {
     const status = ownership.find(o => o.cardId === cardId);
-    return status?.owned || false;  // owned=trueは「持っていない」を意味する
+    return status?.notOwned || false;
+  };
+
+  const getTradeableStatus = (cardId: string): boolean => {
+    const status = ownership.find(o => o.cardId === cardId);
+    return status?.tradeable || false;
   };
 
   const rarities = ['all', ...new Set(cards.map(card => card.rarity))];
+  const series = ['all', ...new Set(cards.map(card => card.series))];
 
   return (
     <div className="card-list-container">
@@ -59,24 +70,45 @@ export const CardList: React.FC<CardListProps> = ({
             </option>
           ))}
         </select>
+        <select
+          value={seriesFilter}
+          onChange={(e) => setSeriesFilter(e.target.value)}
+          className="series-select"
+        >
+          {series.map(s => (
+            <option key={s} value={s}>
+              {s === 'all' ? '全てのシリーズ' : s}
+            </option>
+          ))}
+        </select>
       </div>
 
       <div className="cards-grid">
         {filteredCards.map(card => {
-          const isMissing = getMissingStatus(card.id);
+          const isNotOwned = getNotOwnedStatus(card.id);
+          const isTradeable = getTradeableStatus(card.id);
           const missingUserIds = allOwnership
-            .filter(o => o.cardId === card.id && o.owned)
+            .filter(o => o.cardId === card.id && o.notOwned)
             .map(o => o.userId);
           const missingUserNames = users
             .filter(u => missingUserIds.includes(u.id))
             .map(u => u.name);
-
+          
           const hasMissingUsers = missingUserNames.length > 0;
+          
+          // 交換可能なユーザーを取得
+          const tradeableUserIds = allOwnership
+            .filter(o => o.cardId === card.id && o.notOwned && o.tradeable && o.userId !== currentUserId)
+            .map(o => o.userId);
+          const tradeableUserNames = users
+            .filter(u => tradeableUserIds.includes(u.id))
+            .map(u => u.name);
+          const hasTradeableUsers = tradeableUserNames.length > 0 && isNotOwned;
 
           return (
-            <div
-              key={card.id}
-              className={`card-item ${isMissing ? 'missing' : ''} ${hasMissingUsers ? 'has-missing-users' : ''}`}
+            <div 
+              key={card.id} 
+              className={`card-item ${isNotOwned ? 'missing' : ''} ${hasMissingUsers ? 'has-missing-users' : ''} ${hasTradeableUsers ? 'has-tradeable-users' : ''}`}
               onClick={() => setSelectedCard(card)}
             >
               {card.imageUrl && (
@@ -88,13 +120,21 @@ export const CardList: React.FC<CardListProps> = ({
                 <p className="card-rarity">{card.rarity}</p>
                 <p className="card-series">{card.series}</p>
                 <div className="ownership-section">
-                  <label className={`ownership-checkbox ${isMissing ? 'checked' : ''}`} onClick={(e) => e.stopPropagation()}>
+                  <label className={`ownership-checkbox ${isNotOwned ? 'checked' : ''}`} onClick={(e) => e.stopPropagation()}>
                     <input
                       type="checkbox"
-                      checked={isMissing}
-                      onChange={(e) => onToggleOwnership(card.id, e.target.checked)}
+                      checked={isNotOwned}
+                      onChange={(e) => onToggleNotOwned(card.id, e.target.checked)}
                     />
                     <span className="checkbox-text">未所持</span>
+                  </label>
+                  <label className={`ownership-checkbox tradeable ${isTradeable ? 'checked' : ''}`} onClick={(e) => e.stopPropagation()}>
+                    <input
+                      type="checkbox"
+                      checked={isTradeable}
+                      onChange={(e) => onToggleTradeable(card.id, e.target.checked)}
+                    />
+                    <span className="checkbox-text">交換可能</span>
                   </label>
                 </div>
                 {missingUserNames.length > 0 && missingUserNames.length < users.length && (
@@ -102,6 +142,14 @@ export const CardList: React.FC<CardListProps> = ({
                     <div className="some-missing">
                       <span className="missing-badge">{missingUserNames.length}</span>
                       <span>人が未所持</span>
+                    </div>
+                  </div>
+                )}
+                {hasTradeableUsers && (
+                  <div className="tradeable-indicator" title={`交換可能: ${tradeableUserNames.join(', ')}`}>
+                    <div className="some-tradeable">
+                      <span className="tradeable-badge">{tradeableUserNames.length}</span>
+                      <span>人が交換可能</span>
                     </div>
                   </div>
                 )}

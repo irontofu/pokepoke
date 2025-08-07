@@ -16,7 +16,7 @@ export const CollectionStats: React.FC<CollectionStatsProps> = ({
   currentUserId,
 }) => {
   const calculateStats = (userId: string) => {
-    const userMissing = ownership.filter(o => o.userId === userId && o.owned);
+    const userMissing = ownership.filter(o => o.userId === userId && o.notOwned);
     const missingCards = userMissing.length;
     const totalCards = cards.length;
     const ownedCards = totalCards - missingCards;
@@ -47,15 +47,15 @@ export const CollectionStats: React.FC<CollectionStatsProps> = ({
   const currentUser = users.find(u => u.id === currentUserId);
 
   const getMissingCards = () => {
-    const userMissing = ownership.filter(o => o.userId === currentUserId && o.owned);
+    const userMissing = ownership.filter(o => o.userId === currentUserId && o.notOwned);
     const missingCardIds = new Set(userMissing.map(o => o.cardId));
     return cards.filter(card => missingCardIds.has(card.id));
   };
 
   const getUnownedByAnyone = () => {
-    // owned=trueは「持っていない」を意味するので、全ユーザーのowned=trueを集計
+    // notOwned=trueは「持っていない」を意味するので、全ユーザーのnotOwned=trueを集計
     const cardMissingCount: { [cardId: string]: number } = {};
-    ownership.filter(o => o.owned).forEach(o => {
+    ownership.filter(o => o.notOwned).forEach(o => {
       cardMissingCount[o.cardId] = (cardMissingCount[o.cardId] || 0) + 1;
     });
     
