@@ -9,6 +9,7 @@ interface CardListProps {
   allOwnership: OwnershipStatus[];
   users: User[];
   currentUserId: string;
+  loggedInUserId: string | null;
   onToggleNotOwned: (cardId: string, notOwned: boolean) => void;
   onToggleTradeable: (cardId: string, tradeable: boolean) => void;
 }
@@ -19,6 +20,7 @@ export const CardList: React.FC<CardListProps> = ({
   allOwnership,
   users,
   currentUserId,
+  loggedInUserId,
   onToggleNotOwned,
   onToggleTradeable,
 }) => {
@@ -119,19 +121,21 @@ export const CardList: React.FC<CardListProps> = ({
                 <p className="card-rarity">{card.rarity}</p>
                 <p className="card-series">{card.series}</p>
                 <div className="ownership-section">
-                  <label className={`ownership-checkbox ${isNotOwned ? 'checked' : ''}`} onClick={(e) => e.stopPropagation()}>
+                  <label className={`ownership-checkbox ${isNotOwned ? 'checked' : ''} ${currentUserId !== loggedInUserId ? 'readonly' : ''}`} onClick={(e) => e.stopPropagation()}>
                     <input
                       type="checkbox"
                       checked={isNotOwned}
                       onChange={(e) => onToggleNotOwned(card.id, e.target.checked)}
+                      disabled={currentUserId !== loggedInUserId}
                     />
                     <span className="checkbox-text">未所持</span>
                   </label>
-                  <label className={`ownership-checkbox tradeable ${isTradeable ? 'checked' : ''}`} onClick={(e) => e.stopPropagation()}>
+                  <label className={`ownership-checkbox tradeable ${isTradeable ? 'checked' : ''} ${currentUserId !== loggedInUserId ? 'readonly' : ''}`} onClick={(e) => e.stopPropagation()}>
                     <input
                       type="checkbox"
                       checked={isTradeable}
                       onChange={(e) => onToggleTradeable(card.id, e.target.checked)}
+                      disabled={currentUserId !== loggedInUserId}
                     />
                     <span className="checkbox-text">交換可能</span>
                   </label>

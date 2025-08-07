@@ -144,6 +144,19 @@
   cursor: pointer;
 }
 
+.ownership-checkbox.readonly {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.ownership-checkbox.readonly:hover {
+  background-color: transparent;
+}
+
+.ownership-checkbox.readonly input[type="checkbox"] {
+  cursor: not-allowed;
+}
+
 .checkbox-text {
   font-size: 14px;
   color: #666;

@@ -14,6 +14,7 @@ function App() {
   const [ownership, setOwnership] = useState<OwnershipStatus[]>([]);
   const [allOwnership, setAllOwnership] = useState<OwnershipStatus[]>([]);
   const [currentUserId, setCurrentUserId] = useState<string>('user1');
+  const [loggedInUserId, setLoggedInUserId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'cards' | 'stats'>('cards');
   const [isSignedIn, setIsSignedIn] = useState(false);
@@ -42,6 +43,7 @@ function App() {
           const currentUser = usersData.find(u => u.email === userInfo.email);
           if (currentUser) {
             setCurrentUserId(currentUser.id);
+            setLoggedInUserId(currentUser.id);
             const ownershipData = allOwnershipData.filter(o => o.userId === currentUser.id);
             setOwnership(ownershipData);
           }
@@ -83,6 +85,7 @@ function App() {
         const currentUser = usersData.find(u => u.email === userInfo.email);
         if (currentUser) {
           setCurrentUserId(currentUser.id);
+          setLoggedInUserId(currentUser.id);
           // 現在のユーザーの所持状況を読み込み
           const ownershipData = allOwnershipData.filter(o => o.userId === currentUser.id);
           setOwnership(ownershipData);
@@ -94,6 +97,7 @@ function App() {
           if (refreshedUser) {
             setUsers(refreshedUsers);
             setCurrentUserId(refreshedUser.id);
+            setLoggedInUserId(refreshedUser.id);
             const ownershipData = allOwnershipData.filter(o => o.userId === refreshedUser.id);
             setOwnership(ownershipData);
           }
@@ -107,16 +111,18 @@ function App() {
   const handleSignOut = () => {
     sheetsService.signOut();
     setIsSignedIn(false);
+    setLoggedInUserId(null);
     setCards([]);
     setUsers([]);
     setOwnership([]);
   };
 
-  const loadData = async () => {
+  const loadData = async (userId?: string) => {
+    const targetUserId = userId || currentUserId;
     const [cardsData, usersData, ownershipData, allOwnershipData] = await Promise.all([
       sheetsService.getCards(),
       sheetsService.getUsers(),
-      sheetsService.getOwnershipStatus(currentUserId),
+      sheetsService.getOwnershipStatus(targetUserId),
       sheetsService.getAllOwnershipStatus(),
     ]);
 
@@ -208,13 +214,14 @@ function App() {
                 <select
                   value={currentUserId}
                   onChange={(e) => {
-                    setCurrentUserId(e.target.value);
-                    loadData();
+                    const newUserId = e.target.value;
+                    setCurrentUserId(newUserId);
+                    loadData(newUserId);
                   }}
                 >
                   {users.map(user => (
                     <option key={user.id} value={user.id}>
-                      {user.name} {user.id === currentUserId && '(あなた)'}
+                      {user.name} {user.id === loggedInUserId && '(あなた)'}
                     </option>
                   ))}
                 </select>
@@ -260,6 +267,7 @@ function App() {
               allOwnership={allOwnership}
               users={users}
               currentUserId={currentUserId}
+              loggedInUserId={loggedInUserId}
               onToggleNotOwned={handleToggleNotOwned}
               onToggleTradeable={handleToggleTradeable}
             />
