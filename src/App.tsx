@@ -3,7 +3,7 @@ import { GoogleOAuthProvider } from '@react-oauth/google';
 import { CardList } from './components/CardList';
 import { CollectionStats } from './components/CollectionStats';
 import { GoogleSheetsService } from './services/googleSheets';
-import { Card, User, OwnershipStatus } from './types';
+import { Card, User, OwnershipStatus, Pack, Rarity } from './types';
 import './App.css';
 
 const CLIENT_ID = process.env.REACT_APP_GOOGLE_CLIENT_ID || '';
@@ -11,6 +11,8 @@ const CLIENT_ID = process.env.REACT_APP_GOOGLE_CLIENT_ID || '';
 function App() {
   const [cards, setCards] = useState<Card[]>([]);
   const [users, setUsers] = useState<User[]>([]);
+  const [packs, setPacks] = useState<Pack[]>([]);
+  const [rarities, setRarities] = useState<Rarity[]>([]);
   const [ownership, setOwnership] = useState<OwnershipStatus[]>([]);
   const [allOwnership, setAllOwnership] = useState<OwnershipStatus[]>([]);
   const [currentUserId, setCurrentUserId] = useState<string>('user1');
@@ -28,14 +30,18 @@ function App() {
       setIsSignedIn(sheetsService.isSignedIn());
       if (sheetsService.isSignedIn()) {
         // 初期化時も現在のユーザーを設定
-        const [cardsData, usersData, allOwnershipData] = await Promise.all([
+        const [cardsData, usersData, packsData, raritiesData, allOwnershipData] = await Promise.all([
           sheetsService.getCards(),
           sheetsService.getUsers(),
+          sheetsService.getPacks(),
+          sheetsService.getRarities(),
           sheetsService.getAllOwnershipStatus(),
         ]);
 
         setCards(cardsData);
         setUsers(usersData);
+        setPacks(packsData);
+        setRarities(raritiesData);
         setAllOwnership(allOwnershipData);
 
         const userInfo = await sheetsService.getUserInfo();
@@ -69,14 +75,18 @@ function App() {
       await new Promise(resolve => setTimeout(resolve, 500));
 
       // ユーザー情報が更新されているので、データを再読み込み
-      const [cardsData, usersData, allOwnershipData] = await Promise.all([
+      const [cardsData, usersData, packsData, raritiesData, allOwnershipData] = await Promise.all([
         sheetsService.getCards(),
         sheetsService.getUsers(),
+        sheetsService.getPacks(),
+        sheetsService.getRarities(),
         sheetsService.getAllOwnershipStatus(),
       ]);
 
       setCards(cardsData);
       setUsers(usersData);
+      setPacks(packsData);
+      setRarities(raritiesData);
       setAllOwnership(allOwnershipData);
 
       // ログインしたユーザーのメールアドレスから現在のユーザーを特定
@@ -119,15 +129,19 @@ function App() {
 
   const loadData = async (userId?: string) => {
     const targetUserId = userId || currentUserId;
-    const [cardsData, usersData, ownershipData, allOwnershipData] = await Promise.all([
+    const [cardsData, usersData, packsData, raritiesData, ownershipData, allOwnershipData] = await Promise.all([
       sheetsService.getCards(),
       sheetsService.getUsers(),
+      sheetsService.getPacks(),
+      sheetsService.getRarities(),
       sheetsService.getOwnershipStatus(targetUserId),
       sheetsService.getAllOwnershipStatus(),
     ]);
 
     setCards(cardsData);
     setUsers(usersData);
+    setPacks(packsData);
+    setRarities(raritiesData);
     setOwnership(ownershipData);
     setAllOwnership(allOwnershipData);
   };
@@ -263,6 +277,8 @@ function App() {
           ) : activeTab === 'cards' ? (
             <CardList
               cards={cards}
+              packs={packs}
+              rarities={rarities}
               ownership={ownership}
               allOwnership={allOwnership}
               users={users}

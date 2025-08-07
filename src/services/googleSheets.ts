@@ -1,4 +1,4 @@
-import { Card, User, OwnershipStatus } from '../types';
+import { Card, User, OwnershipStatus, Pack, Rarity } from '../types';
 
 declare const google: any;
 declare const gapi: any;
@@ -265,6 +265,55 @@ export class GoogleSheetsService {
       }));
     } catch (error) {
       console.error('Error fetching users:', error);
+      return [];
+    }
+  }
+
+  async getPacks(): Promise<Pack[]> {
+    try {
+      if (!this.isSignedIn()) {
+        await this.signIn();
+      }
+      
+      const response = await this.sheets.spreadsheets.values.get({
+        spreadsheetId: SPREADSHEET_ID,
+        range: 'Packs!A2:E',
+      });
+
+      const rows = response.result.values || [];
+      return rows.map((row: any[]) => ({
+        id: row[0],
+        name: row[1],
+        releaseDate: row[2],
+        sortOrder: parseInt(row[3]) || 0,
+        isActive: row[4] === 'TRUE',
+      })).sort((a: Pack, b: Pack) => a.sortOrder - b.sortOrder);
+    } catch (error) {
+      console.error('Error fetching packs:', error);
+      return [];
+    }
+  }
+
+  async getRarities(): Promise<Rarity[]> {
+    try {
+      if (!this.isSignedIn()) {
+        await this.signIn();
+      }
+      
+      const response = await this.sheets.spreadsheets.values.get({
+        spreadsheetId: SPREADSHEET_ID,
+        range: 'Rarities!A2:D',
+      });
+
+      const rows = response.result.values || [];
+      return rows.map((row: any[]) => ({
+        id: row[0],
+        name: row[1],
+        sortOrder: parseInt(row[2]) || 0,
+        isActive: row[3] === 'TRUE',
+      })).sort((a: Rarity, b: Rarity) => a.sortOrder - b.sortOrder);
+    } catch (error) {
+      console.error('Error fetching rarities:', error);
       return [];
     }
   }

@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
-import { Card, OwnershipStatus, User } from '../types';
+import { Card, OwnershipStatus, User, Pack, Rarity } from '../types';
 import { CardDetailModal } from './CardDetailModal';
 import './CardList.css';
 
 interface CardListProps {
   cards: Card[];
+  packs: Pack[];
+  rarities: Rarity[];
   ownership: OwnershipStatus[];
   allOwnership: OwnershipStatus[];
   users: User[];
@@ -16,6 +18,8 @@ interface CardListProps {
 
 export const CardList: React.FC<CardListProps> = ({
   cards,
+  packs,
+  rarities,
   ownership,
   allOwnership,
   users,
@@ -25,15 +29,40 @@ export const CardList: React.FC<CardListProps> = ({
   onToggleTradeable,
 }) => {
   const [filter, setFilter] = useState('');
-  const [rarityFilter, setRarityFilter] = useState('all');
-  const [seriesFilter, setSeriesFilter] = useState('all');
+  const [rarityFilter, setRarityFilter] = useState('tradeable');
+  const [seriesFilter, setSeriesFilter] = useState('tradeable');
   const [selectedCard, setSelectedCard] = useState<Card | null>(null);
+
 
   const filteredCards = cards.filter(card => {
     const matchesSearch = card.name.toLowerCase().includes(filter.toLowerCase()) ||
                          card.number.includes(filter);
-    const matchesRarity = rarityFilter === 'all' || card.rarity === rarityFilter;
-    const matchesSeries = seriesFilter === 'all' || card.series === seriesFilter;
+    
+    // レアリティフィルターの処理
+    let matchesRarity = false;
+    if (rarityFilter === 'all') {
+      matchesRarity = true;
+    } else if (rarityFilter === 'tradeable') {
+      // 交換可能レアリティのみ表示
+      const cardRarity = rarities.find(r => r.name === card.rarity);
+      matchesRarity = cardRarity?.isActive || false;
+    } else {
+      matchesRarity = card.rarity === rarityFilter;
+    }
+    
+    // シリーズフィルターの処理
+    let matchesSeries = false;
+    if (seriesFilter === 'all') {
+      matchesSeries = true;
+    } else if (seriesFilter === 'tradeable') {
+      // 交換可能パックのみ表示
+      const cardPack = packs.find(p => p.name === card.series);
+      matchesSeries = cardPack?.isActive || false;
+    } else {
+      matchesSeries = card.series === seriesFilter;
+    }
+    
+    
     return matchesSearch && matchesRarity && matchesSeries;
   });
 
@@ -47,8 +76,8 @@ export const CardList: React.FC<CardListProps> = ({
     return status?.tradeable || false;
   };
 
-  const rarities = ['all', ...new Set(cards.map(card => card.rarity))];
-  const series = ['all', ...new Set(cards.map(card => card.series))];
+  const raritiesFilter = ['all', 'tradeable', ...new Set(cards.map(card => card.rarity))];
+  const series = ['all', 'tradeable', ...new Set(cards.map(card => card.series))];
 
   return (
     <div className="card-list-container">
@@ -65,9 +94,9 @@ export const CardList: React.FC<CardListProps> = ({
           onChange={(e) => setRarityFilter(e.target.value)}
           className="rarity-select"
         >
-          {rarities.map(rarity => (
+          {raritiesFilter.map(rarity => (
             <option key={rarity} value={rarity}>
-              {rarity === 'all' ? '全てのレアリティ' : rarity}
+              {rarity === 'all' ? '全てのレアリティ' : rarity === 'tradeable' ? '交換可能レアリティ' : rarity}
             </option>
           ))}
         </select>
@@ -78,7 +107,7 @@ export const CardList: React.FC<CardListProps> = ({
         >
           {series.map(s => (
             <option key={s} value={s}>
-              {s === 'all' ? '全てのシリーズ' : s}
+              {s === 'all' ? '全てのシリーズ' : s === 'tradeable' ? '交換可能パック' : s}
             </option>
           ))}
         </select>
@@ -117,9 +146,9 @@ export const CardList: React.FC<CardListProps> = ({
               )}
               <div className="card-info">
                 <h3>{card.name}</h3>
+                <p className="card-series">{card.series}</p>
                 <p className="card-number">No. {card.number}</p>
                 <p className="card-rarity">{card.rarity}</p>
-                <p className="card-series">{card.series}</p>
                 <div className="ownership-section">
                   <label className={`ownership-checkbox ${isNotOwned ? 'checked' : ''} ${currentUserId !== loggedInUserId ? 'readonly' : ''}`} onClick={(e) => e.stopPropagation()}>
                     <input

@@ -13,6 +13,21 @@ export interface User {
   email: string;
 }
 
+export interface Pack {
+  id: string;
+  name: string;
+  releaseDate: string;
+  sortOrder: number;
+  isActive: boolean;
+}
+
+export interface Rarity {
+  id: string;
+  name: string;
+  sortOrder: number;
+  isActive: boolean;
+}
+
 export interface OwnershipStatus {
   cardId: string;
   userId: string;
