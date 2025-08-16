@@ -252,17 +252,82 @@
 }
 
 @media (max-width: 600px) {
+  .modal-overlay {
+    padding: 10px;
+  }
+
+  .modal-content {
+    max-height: 95vh;
+  }
+
   .card-detail {
     flex-direction: column;
+    padding: 15px;
   }
   
   .card-detail-image {
     width: 100%;
-    max-width: 300px;
+    max-width: 250px;
     margin: 0 auto;
+  }
+
+  .card-detail-image-placeholder {
+    width: 100%;
+    max-width: 250px;
+    height: 350px;
+    margin: 0 auto;
+  }
+
+  .card-detail-info h2 {
+    font-size: 24px;
+  }
+
+  .card-detail-number {
+    font-size: 14px;
+  }
+
+  .card-detail-rarity {
+    font-size: 16px;
+  }
+
+  .card-detail-series {
+    font-size: 14px;
   }
   
   .ownership-summary {
-    gap: 40px;
+    gap: 20px;
+    padding: 15px;
+  }
+
+  .stat-label {
+    font-size: 12px;
+  }
+
+  .stat-value {
+    font-size: 24px;
+  }
+
+  .user-lists {
+    padding: 15px;
+  }
+
+  .user-list-section h3 {
+    font-size: 16px;
+  }
+
+  .user-item {
+    padding: 8px 12px;
+  }
+
+  .user-name {
+    font-size: 14px;
+  }
+
+  .user-email {
+    font-size: 12px;
+  }
+
+  .ownership-status {
+    font-size: 12px;
   }
 }

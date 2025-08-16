@@ -153,3 +153,62 @@ body {
 .sign-in-button:hover {
   background-color: #1565c0;
 }
+
+/* モバイル対応 */
+@media (max-width: 768px) {
+  .app-header {
+    padding: 15px;
+    flex-direction: column;
+    gap: 15px;
+  }
+
+  .app-header h1 {
+    font-size: 20px;
+    text-align: center;
+  }
+
+  .header-controls {
+    width: 100%;
+    flex-direction: column;
+    gap: 10px;
+    align-items: flex-start;
+  }
+
+  .user-selector {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .user-selector select {
+    flex: 1;
+    max-width: 200px;
+  }
+
+  .sign-button {
+    width: auto;
+    padding: 8px 12px;
+    font-size: 14px;
+  }
+
+  .tab-navigation {
+    padding: 0 10px;
+    gap: 5px;
+  }
+
+  .tab-button {
+    padding: 12px 15px;
+    font-size: 14px;
+  }
+
+  .sign-in-prompt {
+    padding: 40px 15px;
+  }
+
+  .sign-in-prompt h2 {
+    font-size: 24px;
+  }
+
+  .sign-in-prompt p {
+    font-size: 16px;
+  }
+}

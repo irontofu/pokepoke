@@ -281,3 +281,108 @@
   font-size: 14px;
   font-weight: bold;
 }
+
+/* モバイル対応 */
+@media (max-width: 768px) {
+  .card-list-container {
+    padding: 10px;
+  }
+
+  .filters {
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 15px;
+  }
+
+  .search-input,
+  .rarity-select,
+  .series-select {
+    width: 100%;
+    padding: 12px;
+  }
+
+  .filter-checkbox {
+    align-self: flex-start;
+    padding: 8px 0;
+  }
+
+  .cards-grid {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+  }
+
+  .card-item {
+    padding: 8px;
+  }
+
+  .card-info h3 {
+    font-size: 12px;
+    margin-bottom: 5px;
+  }
+
+  .card-number {
+    font-size: 10px;
+  }
+
+  .card-rarity,
+  .card-series {
+    font-size: 10px;
+  }
+
+  .ownership-section {
+    margin-top: 6px;
+    gap: 4px;
+  }
+
+  .ownership-checkbox {
+    padding: 4px 6px;
+    width: 100%;
+  }
+
+  .checkbox-text {
+    font-size: 11px;
+  }
+
+  .missing-indicator,
+  .tradeable-indicator {
+    font-size: 10px;
+  }
+
+  .check-icon,
+  .alert-icon,
+  .missing-badge,
+  .tradeable-badge {
+    font-size: 10px;
+  }
+
+  .missing-badge,
+  .tradeable-badge {
+    min-width: 16px;
+    height: 16px;
+    padding: 0 3px;
+  }
+}
+
+/* より小さい画面用の追加調整 */
+@media (max-width: 480px) {
+  .cards-grid {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+  }
+
+  .card-item {
+    padding: 6px;
+  }
+
+  .card-info h3 {
+    font-size: 11px;
+  }
+
+  .ownership-checkbox {
+    padding: 3px 5px;
+  }
+
+  .checkbox-text {
+    font-size: 10px;
+  }
+}
