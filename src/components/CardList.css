@@ -7,6 +7,12 @@
   gap: 10px;
   margin-bottom: 20px;
   align-items: center;
+  flex-wrap: wrap;
+}
+
+.filter-checkboxes {
+  display: flex;
+  gap: 20px;
 }
 
 .search-input {
@@ -301,8 +307,14 @@
     padding: 12px;
   }
 
+  .filter-checkboxes {
+    display: flex;
+    gap: 15px;
+    width: 100%;
+  }
+
   .filter-checkbox {
-    align-self: flex-start;
+    flex: 1;
     padding: 8px 0;
   }
 

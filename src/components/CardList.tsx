@@ -117,22 +117,24 @@ export const CardList: React.FC<CardListProps> = ({
           onChange={(e) => setFilter(e.target.value)}
           className="search-input"
         />
-        <label className="filter-checkbox">
-          <input
-            type="checkbox"
-            checked={showNotOwnedOnly}
-            onChange={(e) => setShowNotOwnedOnly(e.target.checked)}
-          />
-          <span>未所持のみ</span>
-        </label>
-        <label className="filter-checkbox">
-          <input
-            type="checkbox"
-            checked={showTradeableOnly}
-            onChange={(e) => setShowTradeableOnly(e.target.checked)}
-          />
-          <span>交換可能者あり</span>
-        </label>
+        <div className="filter-checkboxes">
+          <label className="filter-checkbox">
+            <input
+              type="checkbox"
+              checked={showNotOwnedOnly}
+              onChange={(e) => setShowNotOwnedOnly(e.target.checked)}
+            />
+            <span>未所持のみ</span>
+          </label>
+          <label className="filter-checkbox">
+            <input
+              type="checkbox"
+              checked={showTradeableOnly}
+              onChange={(e) => setShowTradeableOnly(e.target.checked)}
+            />
+            <span>交換可能者あり</span>
+          </label>
+        </div>
         <select
           value={rarityFilter}
           onChange={(e) => setRarityFilter(e.target.value)}
