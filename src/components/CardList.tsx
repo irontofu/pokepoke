@@ -35,6 +35,15 @@ export const CardList: React.FC<CardListProps> = ({
   const [showTradeableOnly, setShowTradeableOnly] = useState(false);
   const [selectedCard, setSelectedCard] = useState<Card | null>(null);
 
+  // モーダル用のハンドラー関数（一覧画面と同じ制御）
+  const handleToggleOwnership = (cardId: string, notOwned: boolean) => {
+    onToggleNotOwned(cardId, notOwned);
+  };
+
+  const handleToggleTradeable = (cardId: string, tradeable: boolean) => {
+    onToggleTradeable(cardId, tradeable);
+  };
+
 
 
   const filteredCards = cards.filter(card => {
@@ -230,6 +239,12 @@ export const CardList: React.FC<CardListProps> = ({
         card={selectedCard}
         users={users}
         allOwnership={allOwnership}
+        currentUserId={currentUserId}
+        loggedInUserId={loggedInUserId}
+        isOwnedByUser={selectedCard ? !getNotOwnedStatus(selectedCard.id) : false}
+        isTradeableByUser={selectedCard ? getTradeableStatus(selectedCard.id) : false}
+        onToggleOwnership={handleToggleOwnership}
+        onToggleTradeable={handleToggleTradeable}
         onClose={() => setSelectedCard(null)}
       />
     </div>

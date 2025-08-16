@@ -6,6 +6,12 @@ interface CardDetailModalProps {
   card: Card | null;
   users: User[];
   allOwnership: OwnershipStatus[];
+  currentUserId: string;
+  loggedInUserId: string | null;
+  isOwnedByUser: boolean;
+  isTradeableByUser: boolean;
+  onToggleOwnership: (cardId: string, notOwned: boolean) => void;
+  onToggleTradeable: (cardId: string, tradeable: boolean) => void;
   onClose: () => void;
 }
 
@@ -13,6 +19,12 @@ export const CardDetailModal: React.FC<CardDetailModalProps> = ({
   card,
   users,
   allOwnership,
+  currentUserId,
+  loggedInUserId,
+  isOwnedByUser,
+  isTradeableByUser,
+  onToggleOwnership,
+  onToggleTradeable,
   onClose,
 }) => {
   if (!card) return null;
@@ -34,8 +46,8 @@ export const CardDetailModal: React.FC<CardDetailModalProps> = ({
 
   return (
     <div className="modal-overlay" onClick={onClose}>
+      <button className="modal-close" onClick={onClose}>×</button>
       <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-        <button className="modal-close" onClick={onClose}>×</button>
         
         <div className="card-detail">
           {card.imageUrl ? (
@@ -54,15 +66,25 @@ export const CardDetailModal: React.FC<CardDetailModalProps> = ({
           </div>
         </div>
 
-        <div className="ownership-summary">
-          <div className="ownership-stat">
-            <span className="stat-label">未所持</span>
-            <span className="stat-value missing">{missingUsers.length}人</span>
-          </div>
-          <div className="ownership-stat">
-            <span className="stat-label">交換可能</span>
-            <span className="stat-value tradeable">{tradeableUsers.length}人</span>
-          </div>
+        <div className="ownership-controls">
+          <label className={`ownership-checkbox ${!isOwnedByUser ? 'checked' : ''} ${currentUserId !== loggedInUserId ? 'readonly' : ''}`}>
+            <input
+              type="checkbox"
+              checked={!isOwnedByUser}
+              onChange={(e) => onToggleOwnership(card.id, e.target.checked)}
+              disabled={currentUserId !== loggedInUserId}
+            />
+            <span className="checkbox-text">未所持</span>
+          </label>
+          <label className={`ownership-checkbox tradeable ${isTradeableByUser ? 'checked' : ''} ${currentUserId !== loggedInUserId ? 'readonly' : ''}`}>
+            <input
+              type="checkbox"
+              checked={isTradeableByUser}
+              onChange={(e) => onToggleTradeable(card.id, e.target.checked)}
+              disabled={currentUserId !== loggedInUserId}
+            />
+            <span className="checkbox-text">交換可能</span>
+          </label>
         </div>
 
         <div className="user-lists">
@@ -71,11 +93,14 @@ export const CardDetailModal: React.FC<CardDetailModalProps> = ({
             {missingUsers.length > 0 ? (
               <ul className="user-list missing-users-list">
                 {missingUsers.map(user => {
-                  const isTradeable = tradeableOwnership.some(o => o.userId === user.id);
+                  // この未所持者以外で交換可能な人がいるかチェック
+                  const canReceiveFromOthers = tradeableOwnership.some(o => 
+                    o.userId !== user.id && !o.notOwned
+                  );
                   return (
-                    <li key={user.id} className={`user-item missing ${isTradeable ? 'tradeable' : ''}`}>
+                    <li key={user.id} className={`user-item missing ${canReceiveFromOthers ? 'tradeable' : ''}`}>
                       <span className="user-name">{user.name}</span>
-                      {isTradeable && <span className="tradeable-badge">交換可能</span>}
+                      {canReceiveFromOthers && <span className="tradeable-badge">入手可能</span>}
                     </li>
                   );
                 })}
